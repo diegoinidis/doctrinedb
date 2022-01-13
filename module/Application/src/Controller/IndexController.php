@@ -10,6 +10,7 @@ use DoctrineORMModule\Paginator\Adapter\DoctrinePaginator as DoctrineAdapter;
 use Doctrine\ORM\Tools\Pagination\Paginator as ORMPaginator;
 use Laminas\Paginator\Paginator;
 use Application\Entity\Post;
+use Application\Form\PostForm;
 
 class IndexController extends AbstractActionController
 {
@@ -18,6 +19,8 @@ class IndexController extends AbstractActionController
    * @var Doctrine\ORM\EntityManager
    */
   private $entityManager;
+
+  private $postManager;
 
   // Constructor method is used to inject dependencies to the controller.
   public function __construct($entityManager, $postManager) 
@@ -59,6 +62,30 @@ class IndexController extends AbstractActionController
         'posts' => $paginator,
         'postManager' => $this->postManager,
         'tagCloud' => $tagCloud
+    ]);
+  }
+
+  public function addAction()
+  {
+    $form = new PostForm();
+
+    if ($this->getRequest()->isPost())
+    {
+      $data = $this->params()->fromPost();
+
+      $form->setData($data);
+      if ($form->isValid())
+      {
+        $data = $form->getData();
+
+        $this->postManager->addNewPost($data);
+
+        return $this->redirect()->toRoute('application');
+      }
+    }
+
+    return new ViewModel([
+      'form'  => $form
     ]);
   }
 }
